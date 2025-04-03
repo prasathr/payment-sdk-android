@@ -143,7 +143,7 @@ class DataStoreImpl(private val context: Context) : DataStore {
             Product(name = "🐙", amount = 1500.0),
             Product(name = "🐡", amount = 2200.0),
             Product(name = "🐶", amount = 3000.0),
-            Product(name = "🦊", amount = 3000.12),
+            Product(name = "🦊", amount = 56.56)
         )
     }
 }

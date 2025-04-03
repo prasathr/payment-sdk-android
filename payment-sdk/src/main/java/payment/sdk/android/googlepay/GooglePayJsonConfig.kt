@@ -43,10 +43,11 @@ internal class GooglePayJsonConfig() {
      * @param merchantInfo Information about the merchant.
      * @return JSON object with the merchant configuration.
      */
-    private fun createMerchantConfig(merchantInfo: MerchantInfo): JSONObject =
+    private fun createMerchantConfig(merchantInfo: MerchantInfo, merchantOrigin: String): JSONObject =
         JSONObject()
             .put("merchantId", merchantInfo.reference)
             .put("merchantName", merchantInfo.name)
+            .put("merchantOrigin", merchantOrigin)
 
     /**
      * Generates the allowed payment methods.
@@ -59,6 +60,7 @@ internal class GooglePayJsonConfig() {
         allowedAuthMethods: List<String>,
         allowedCardNetworks: List<String>,
         merchantGatewayId: String?,
+        gateway: String
     ): JSONArray = JSONArray().put(
         JSONObject()
             .put("type", "CARD")
@@ -69,16 +71,22 @@ internal class GooglePayJsonConfig() {
                     .put("allowedCardNetworks", JSONArray(allowedCardNetworks))
             ).put(
                 "tokenizationSpecification",
-                JSONObject()
-                    .put("type", "PAYMENT_GATEWAY")
-                    .put(
-                        "parameters",
-                        JSONObject()
-                            .put("gatewayMerchantId", merchantGatewayId)
-                            .put("gateway", PAYMENT_GATEWAY_TOKENIZATION_NAME)
-                    )
+                getTokenizationSpecification(merchantGatewayId, gateway)
             )
     )
+
+    private fun getTokenizationSpecification(gatewayMerchantId: String?, gateway: String): JSONObject {
+        val tokenizationSpecification = JSONObject()
+        //TODO this need a revisit to pass the values
+        tokenizationSpecification.put("type", "PAYMENT_GATEWAY")
+        tokenizationSpecification.put(
+            "parameters",
+            JSONObject()
+                .put("gateway", gateway)
+                .put("gatewayMerchantId", gatewayMerchantId)
+        )
+        return tokenizationSpecification
+    }
 
     fun isReadyToPayRequest(
         allowedPaymentMethods: JSONArray
@@ -115,13 +123,15 @@ internal class GooglePayJsonConfig() {
         allowedPaymentMethods = getAllowedPaymentMethods(
             allowedCardNetworks = googlePayConfigResponse.allowedPaymentMethods,
             allowedAuthMethods = googlePayConfigResponse.allowedAuthMethods,
-            merchantGatewayId = googlePayConfigResponse.merchantGatewayId
+            merchantGatewayId = googlePayConfigResponse.merchantGatewayId,
+            gateway = PAYMENT_GATEWAY_TOKENIZATION_NAME
         ),
-        merchantInfo = createMerchantConfig(googlePayConfigResponse.merchantInfo)
+        merchantInfo = createMerchantConfig(googlePayConfigResponse.merchantInfo,
+            googlePayConfigResponse.merchantOrigin)
     ).toString()
 
     companion object {
-        private const val PAYMENT_GATEWAY_TOKENIZATION_NAME = "networkintl"
+        const val PAYMENT_GATEWAY_TOKENIZATION_NAME = "networkintl"
     }
 }
 

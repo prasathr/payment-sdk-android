@@ -7,6 +7,7 @@ import kotlinx.coroutines.tasks.await
 import payment.sdk.android.payments.GooglePayUiConfig
 import payment.sdk.android.core.GooglePayConfigResponse
 import payment.sdk.android.core.interactor.GooglePayConfigInteractor
+import payment.sdk.android.googlepay.GooglePayJsonConfig.Companion.PAYMENT_GATEWAY_TOKENIZATION_NAME
 
 internal class GooglePayConfigFactory(
     private val paymentsClient: PaymentsClient,
@@ -51,7 +52,8 @@ internal class GooglePayConfigFactory(
             val allowedPaymentMethods = googlePayJsonConfig.getAllowedPaymentMethods(
                 allowedAuthMethods = googlePayConfigResponse.allowedAuthMethods,
                 allowedCardNetworks = googlePayConfigResponse.allowedPaymentMethods,
-                merchantGatewayId = googlePayConfigResponse.merchantGatewayId
+                merchantGatewayId = googlePayConfigResponse.merchantGatewayId,
+                gateway = PAYMENT_GATEWAY_TOKENIZATION_NAME
             )
             return GooglePayUiConfig(
                 canUseGooglePay = fetchCanUseGooglePay(
